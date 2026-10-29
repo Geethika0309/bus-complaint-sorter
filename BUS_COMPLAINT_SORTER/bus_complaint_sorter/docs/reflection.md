@@ -1,0 +1,13 @@
+# Reflection (approximately 400 words)
+
+The Bus Complaint Sorter addresses a practical problem: transport staff may receive many complaints, and an important safety issue can be hidden among ordinary reports about delays, crowding, or air-conditioning. The purpose of this project is to organise complaints and bring possible safety risks to a human officer's attention sooner. It is not designed to decide fault or take action against anyone.
+
+One important lesson is that asking an LLM for an answer is not enough. The model may return invalid JSON, use a category that is not allowed, produce a summary that is too long, or guess a route. For this reason, the program validates the response in Python. It also checks the route against the routes CSV and the original complaint. This separates language understanding from rules that can be checked deterministically. Python, rather than the LLM, counts complaints by category and route.
+
+Reliability is another key part of the design. The program retries an invalid response once and then records `needs_manual_review`. API errors are caught so one failure does not stop all later complaints from being processed. This fallback is safer than inventing a classification. However, it also means the reports may contain complaints that still need human attention, especially if the API key is missing or the service is unavailable.
+
+The system prompt uses the Authority, Exemplar, Constraint, Rubric, and Metadata framework. Examples show the required JSON shape, while the rubric defines when a complaint is urgent. A driver complaint is not automatically urgent; urgency is reserved for specific safety risks such as phone use while driving, faulty brakes, smoke, or students on the footboard. The red-team cases help check whether fake instructions, missing route numbers, and unlisted routes are handled safely.
+
+The reports are useful only if their limitations are understood. A false negative could hide a safety concern, while a false positive could use staff time. Therefore, the transport officer must review the urgent list and manual-review rows, and the original complaint should remain available for context. The software does not contact drivers or determine who is at fault.
+
+Finally, API keys must be protected with environment variables and `.gitignore`. Cost and latency should be estimated from actual token usage and current provider pricing, not guessed as an exact amount. Before presenting this project, I need to run the tests, perform a live end-to-end test, record the real model outputs, compare report counts, and be able to explain every function. The most important learning is that responsible AI needs validation, security, and human accountability—not just a prompt.
